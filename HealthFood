@@ -1,0 +1,114 @@
+package com.mycompany.healthfood;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+class Meal {
+    String name; int calories, protein, fat, carbohydrates;
+    public Meal(String name, int calories, int protein, int fat, int carbohydrates) {
+        this.name = name; this.calories = calories; this.protein = protein; this.fat = fat; this.carbohydrates = carbohydrates;
+    }
+    @Override
+    public String toString() {
+        return name + " - Calories: " + calories + ", Protein: " + protein + "g, Fat: " + fat + "g, Carbs: " + carbohydrates + "g";
+    }
+}
+
+class NutritionTracker {
+    private ArrayList<Meal> meals = new ArrayList<>();
+    private HashMap<String, ArrayList<Meal>> mealPlan = new HashMap<>();
+    public void addMeal(Meal meal) { meals.add(meal); }
+    public ArrayList<Meal> getMeals() { return meals; }
+    public void planMeal(String day, Meal meal) {
+        mealPlan.putIfAbsent(day, new ArrayList<>());
+        mealPlan.get(day).add(meal);
+    }
+    public String viewMeals() {
+        StringBuilder sb = new StringBuilder("Logged Meals:\n");
+        meals.forEach(meal -> sb.append(meal).append("\n"));
+        return sb.toString();
+    }
+    public String viewMealPlan() {
+        StringBuilder sb = new StringBuilder("Meal Plan:\n");
+        mealPlan.forEach((day, meals) -> {
+            sb.append(day).append(": ");
+            meals.forEach(meal -> sb.append(meal).append(" | "));
+            sb.append("\n");
+        });
+        return sb.toString();
+    }
+    public String displayNutritionalTips() {
+        return "Nutritional Tips:\n1. Eat a variety of foods.\n2. Include fruits and vegetables.\n3. Stay hydrated.\n4. Limit processed foods.";
+    }
+}
+
+public class HealthFood extends JFrame {
+    private static NutritionTracker nutritionTracker = new NutritionTracker();
+    private JTextArea outputArea;
+
+    public HealthFood() {
+        setTitle("Nutrition Tracker");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        add(new JScrollPane(outputArea), BorderLayout.CENTER);
+        add(createButtonPanel(), BorderLayout.SOUTH);
+    }
+
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel();
+        String[] buttonLabels = {"Add Meal", "View Meals", "Plan Meal", "View Meal Plan", "Nutritional Tips", "Exit"};
+        for (String label : buttonLabels) {
+            JButton button = new JButton(label);
+            button.addActionListener(e -> handleButtonClick(label));
+            panel.add(button);
+        }
+        return panel;
+    }
+
+    private void handleButtonClick(String action) {
+        switch (action) {
+            case "Add Meal": addMeal(); break;
+            case "View Meals": outputArea.setText(nutritionTracker.viewMeals()); break;
+            case "Plan Meal": planMeal(); break;
+            case "View Meal Plan": outputArea.setText(nutritionTracker.viewMealPlan()); break;
+            case "Nutritional Tips": outputArea.setText(nutritionTracker.displayNutritionalTips()); break;
+            case "Exit": System.exit(0);
+        }
+    }
+
+    private void addMeal() {
+        String name = JOptionPane.showInputDialog("Enter meal name:");
+        int calories = Integer.parseInt(JOptionPane.showInputDialog("Enter calories:"));
+        int protein = Integer.parseInt(JOptionPane.showInputDialog("Enter protein (g):"));
+        int fat = Integer.parseInt(JOptionPane.showInputDialog("Enter fat (g):"));
+        int carbohydrates = Integer.parseInt(JOptionPane.showInputDialog("Enter carbohydrates (g):"));
+        nutritionTracker.addMeal(new Meal(name, calories, protein, fat, carbohydrates));
+        outputArea.append("Meal added: " + name + "\n");
+    }
+
+    private void planMeal() {
+        String day = JOptionPane.showInputDialog("Enter the day for meal planning:");
+        String mealName = JOptionPane.showInputDialog("Enter meal name to plan:");
+        for (Meal meal : nutritionTracker.getMeals()) {
+            if (meal.name.equalsIgnoreCase(mealName)) {
+                nutritionTracker.planMeal(day, meal);
+                outputArea.append("Meal planned for " + day + ": " + mealName + "\n");
+                return;
+            }
+        }
+        outputArea.append("Meal not found.\n");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            HealthFood frame = new HealthFood();
+            frame.setVisible(true);
+        });
+    }
+}
